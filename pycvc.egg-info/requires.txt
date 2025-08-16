@@ -1,0 +1,2 @@
+setuptools
+cryptography>=3.3

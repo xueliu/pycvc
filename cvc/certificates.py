@@ -23,7 +23,7 @@ from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 from cryptography.hazmat.primitives.asymmetric import ec, rsa, utils, x25519, x448, ed25519, ed448
 from cryptography.exceptions import InvalidSignature
 import datetime
-from cvc.utils import to_bytes, bcd, get_hash_padding, scheme_rsa
+from cvc.utils import to_bytes, from_bytes, bcd, get_hash_padding, scheme_rsa
 from cvc.ec_curves import EcCurve
 from cvc.asn1 import ASN1
 from cvc.terminal import Type
@@ -143,8 +143,8 @@ class CVC:
         if (isinstance(key, ec.EllipticCurvePrivateKey)):
             signature = key.sign(self.__a.encode(), ec.ECDSA(h))
             r,s = utils.decode_dss_signature(signature)
-            n = math.ceil(key.curve.key_size / 8)
-            signature = r.to_bytes(n, 'big') + s.to_bytes(n, 'big')
+            n = int(math.ceil(key.curve.key_size / 8))
+            signature = to_bytes(r, n, 'big') + to_bytes(s, n, 'big')
         elif (isinstance(key, rsa.RSAPrivateKey)):
             signature = key.sign(self.__a.encode(), p, h)
         elif (isinstance(key, (ed25519.Ed25519PrivateKey, ed448.Ed448PrivateKey))):
@@ -195,8 +195,8 @@ class CVC:
             try:
                 with open(os.path.join(cert_dir,bytes(car)), 'rb') as f:
                     dica = f.read()
-            except FileNotFoundError:
-                print(f'[Warning: File {car.decode()} not found]')
+            except IOError:
+                print('[Warning: File {} not found]'.format(car.decode()))
                 return False
         if (dica is None):
             puk = self.pubkey().data()
@@ -206,7 +206,7 @@ class CVC:
         h,p = get_hash_padding(scheme)
         try:
             if (scheme_rsa(scheme)):
-                pubkey = rsa.RSAPublicNumbers(int.from_bytes(ASN1().decode(puk).find(0x82).data(), 'big'), int.from_bytes(ASN1().decode(puk).find(0x81).data(), 'big')).public_key()
+                pubkey = rsa.RSAPublicNumbers(from_bytes(ASN1().decode(puk).find(0x82).data(), 'big'), from_bytes(ASN1().decode(puk).find(0x81).data(), 'big')).public_key()
                 pubkey.verify(bytes(signature), bytes(body), p, h)
             else:
                 if (not curve):
@@ -219,8 +219,8 @@ class CVC:
                     Q = ASN1().decode(puk).find(0x86).data()
                     if (Q):
                         pubkey = ec.EllipticCurvePublicKey.from_encoded_point(curve, bytes(Q))
-                        n = math.ceil(pubkey.curve.key_size / 8)
-                        pubkey.verify(utils.encode_dss_signature(int.from_bytes(signature[:n],'big'), int.from_bytes(signature[n:],'big')), body, ec.ECDSA(h))
+                        n = int(math.ceil(pubkey.curve.key_size / 8))
+                        pubkey.verify(utils.encode_dss_signature(from_bytes(signature[:n],'big'), from_bytes(signature[n:],'big')), body, ec.ECDSA(h))
                 else:
                     return False
         except InvalidSignature:
@@ -245,6 +245,6 @@ class CVC:
                 if (P):
                     return EcCurve.from_P(P.data()).to_crypto()
                 depth -= 1
-        except FileNotFoundError:
-            print(f'[Warning: File {car.decode()} not found]')
+        except IOError:
+            print('[Warning: File {} not found]'.format(car.decode()))
         return None

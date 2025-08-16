@@ -30,18 +30,22 @@ class ASN1:
         self._buffer = b''
         self._context_counter = 0
 
+    @staticmethod
     def calculate_len(size):
         if (size <= 0x7f):
             return bytearray([size])
         b = to_bytes(size)
         return bytearray([0x80+len(b)]) + b
 
+    @staticmethod
     def make_tag(tag, b):
         return to_bytes(tag) + ASN1.calculate_len(len(b)) + bytearray(b)
 
+    @staticmethod
     def make_context(tag, n):
         return ASN1.make_tag(tag, to_bytes(n))
 
+    @staticmethod
     def make_oid(oid):
         return ASN1.make_tag(ASN1._TAG_OID, oid)
 

@@ -1,0 +1,3 @@
+[console_scripts]
+cvc-create = cvc.tools.cvc_create:run
+cvc-print = cvc.tools.cvc_print:run

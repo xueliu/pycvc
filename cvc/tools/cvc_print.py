@@ -41,7 +41,7 @@ def parse_args():
     if ('--version' in sys.argv):
         print('Card Verifiable Certificate tools for Python')
         print('Author: Pol Henarejos')
-        print(f'Version {__version__}')
+        print('Version {}'.format(__version__))
         print('')
         print('Report bugs to http://github.com/polhenarejos/pycvc/issues')
         print('')
@@ -59,30 +59,30 @@ def main(args):
         cdata = f.read()
 
     print('Certificate:')
-    print(f'  Profile Identifier: {hexlify(CVC().decode(cdata).cpi()).decode()}')
-    print(f'  CAR: {(CVC().decode(cdata).car()).decode()}')
+    print('  Profile Identifier: {}'.format(hexlify(CVC().decode(cdata).cpi()).decode()))
+    print('  CAR: {}'.format((CVC().decode(cdata).car()).decode()))
     print('  Public Key:')
     puboid = CVC().decode(cdata).pubkey().oid()
-    print(f'    Scheme: {oid2scheme(puboid)}')
+    print('    Scheme: {}'.format(oid2scheme(puboid)))
     chr = CVC().decode(cdata).chr()
     car = CVC().decode(cdata).car()
     if (scheme_rsa(puboid)):
-        print(f'    Modulus: {hexlify(CVC().decode(cdata).pubkey().find(0x81).data()).decode()}')
-        print(f'    Exponent: {hexlify(CVC().decode(cdata).pubkey().find(0x82).data()).decode()}')
+        print('    Modulus: {}'.format(hexlify(CVC().decode(cdata).pubkey().find(0x81).data()).decode()))
+        print('    Exponent: {}'.format(hexlify(CVC().decode(cdata).pubkey().find(0x82).data()).decode()))
     elif (scheme_eddsa(puboid)):
-        print(f'    Public Point: {hexlify(CVC().decode(cdata).pubkey().find(0x84).data()).decode()}')
+        print('    Public Point: {}'.format(hexlify(CVC().decode(cdata).pubkey().find(0x84).data()).decode()))
     else:
-        print(f'    Public Point: {hexlify(CVC().decode(cdata).pubkey().find(0x86).data()).decode()}')
-    print(f'  CHR: {chr.decode()}')
+        print('    Public Point: {}'.format(hexlify(CVC().decode(cdata).pubkey().find(0x86).data()).decode()))
+    print('  CHR: {}'.format(chr.decode()))
     typ = CVC().decode(cdata).role()
     if (typ):
-        print(f'  CHAT: {typ.name}')
-        print(f'    Role:  {typ.role_str()}')
+        print('  CHAT: {}'.format(typ.name))
+        print('    Role:  {}'.format(typ.role_str()))
         if (typ.fields() > 0):
-            print(f'    Fields: {typ.fields_str()}')
-        print(f'    Bytes: {hexlify(typ.to_bytes()).decode()}')
-        print(f'  Since:   {bcd2date(CVC().decode(cdata).valid()).strftime("%Y-%m-%d")}')
-        print(f'  Expires: {bcd2date(CVC().decode(cdata).expires()).strftime("%Y-%m-%d")}')
+            print('    Fields: {}'.format(typ.fields_str()))
+        print('    Bytes: {}'.format(hexlify(typ.to_bytes()).decode()))
+        print('  Since:   {}'.format(bcd2date(CVC().decode(cdata).valid()).strftime("%Y-%m-%d")))
+        print('  Expires: {}'.format(bcd2date(CVC().decode(cdata).expires()).strftime("%Y-%m-%d")))
     isreq = CVC().decode(cdata).is_req()
     if (CVC().decode(cdata).verify(cert_dir=cert_dir, dica=cdata if isreq else None)):
         print('Inner signature is VALID')
@@ -101,12 +101,12 @@ def main(args):
                         ret = ret and CVC().decode(adata).verify(cert_dir=cert_dir)
                         chr = CVC().decode(adata).chr()
                         car = CVC().decode(adata).car()
-            except FileNotFoundError:
-                print(f'[Warning: File {car.decode()} not found]')
+            except IOError:
+                print('[Warning: File {} not found]'.format(car.decode()))
                 ret = False
     else:
         if (isreq):
-            print(f'Outer CAR: {CVC().decode(cdata).outer_car().decode()}')
+            print('Outer CAR: {}'.format(CVC().decode(cdata).outer_car().decode()))
             outret = CVC().decode(cdata).verify(cert_dir=cert_dir, outer=True)
             if (outret):
                 print('Outer signature is VALID')

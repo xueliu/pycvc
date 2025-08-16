@@ -18,6 +18,7 @@
  */
 """
 
+import binascii
 from cvc import oid
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
@@ -26,8 +27,23 @@ def to_bytes(n):
     if (n == 0):
         return bytearray([0])
     if (isinstance(n, int)):
-        return bytearray(n.to_bytes((n.bit_length() + 7) // 8, 'big'))
+        if hasattr(n, 'to_bytes'):
+            return bytearray(n.to_bytes((n.bit_length() + 7) // 8, 'big'))
+        else:
+            h = '%x' % n
+            s = ('0'*(len(h) % 2) + h).decode('hex')
+            return bytearray(s)
     return n #Assume is already
+
+def from_bytes(data, big_endian=True):
+    if hasattr(int, 'from_bytes'):
+        return int.from_bytes(data, 'big' if big_endian else 'little')
+
+    if isinstance(data, bytearray):
+        data = str(data)
+    if not big_endian:
+        data = data[::-1]
+    return int(binascii.hexlify(data), 16)
 
 def bcd(s):
     return bytearray([int(c) for c in s])

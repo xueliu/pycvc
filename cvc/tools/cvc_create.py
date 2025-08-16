@@ -105,7 +105,7 @@ def parse_args():
     if ('--version' in sys.argv):
         print('Card Verifiable Certificate tools for Python')
         print('Author: Pol Henarejos')
-        print(f'Version {__version__}')
+        print('Version {}'.format(__version__))
         print('')
         print('Report bugs to http://github.com/polhenarejos/pycvc/issues')
         print('')
@@ -174,7 +174,7 @@ def main(args):
             puboid = CVC().decode(data).pubkey().oid()
             chr = CVC().decode(data).chr()
             if (scheme_rsa(puboid)):
-                pub_key = rsa.RSAPublicNumbers(int.from_bytes(CVC().decode(data).pubkey().find(0x82).data(), 'big'), int.from_bytes(CVC().decode(data).pubkey().find(0x81).data(), 'big')).public_key()
+                pub_key = rsa.RSAPublicNumbers(from_bytes(CVC().decode(data).pubkey().find(0x82).data(), 'big'), from_bytes(CVC().decode(data).pubkey().find(0x81).data(), 'big')).public_key()
             elif (scheme_eddsa(puboid)):
                 Q = CVC().decode(data).pubkey().find(0x84).data()
                 if (len(Q) == 32):

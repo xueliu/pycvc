@@ -1,6 +1,5 @@
 #!/bin/bash -eu
 
-pip3 install -e .
 
 OK="\033[32mok\033[0m"
 FAIL="\033[31mfail\033[0m"
